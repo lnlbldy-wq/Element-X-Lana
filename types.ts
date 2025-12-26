@@ -22,8 +22,8 @@ export interface Reaction {
   bondType: string;
   explanation: string;
   balancedFormationEquation?: string; 
-  formationBalancingSteps?: string; // خطوات وزن تكوين الجزيء من الذرات
-  academicContext?: string; // الشرح الأكاديمي العميق
+  formationBalancingSteps?: string;
+  academicContext?: string;
   
   // الخصائص الفيزيائية
   molecularDensity?: string;
@@ -36,13 +36,18 @@ export interface Reaction {
   reactionType?: string; 
   lewisStructure?: string;
   
-  // الخصائص المتقدمة
+  // الخصائص المتقدمة (تمت الإضافة للدقة)
   hybridization?: string;
   polarity?: string;
+  electronegativityDifference?: string; // جديد: فرق السالبية الكهربائية
+  dipoleMoment?: string; // جديد: عزم الثنائي قطب
+  vanDerWaalsRadius?: string; // جديد: نصف قطر فان دير فالس للمنتج
   magneticDescription?: string;
-  solubilityInWater?: string; // Updated
-  solubilityInOrganicSolvents?: string; // New
+  solubilityInWater?: string;
+  solubilityInOrganicSolvents?: string;
   crystalDescription?: string;
+  thermalStability?: string;
+  bondEnthalpy?: string;
   
   // التاريخ والاكتشاف
   discoverer?: string;
@@ -68,6 +73,7 @@ export interface CompoundReaction {
   academicContext?: string; 
   reactionType: string;
   explanation: string;
+  reactionMechanism?: string;
   colorChange?: string; 
   visualObservations?: string;
   reactionConditions?: string;
@@ -83,7 +89,7 @@ export interface CompoundReaction {
   };
   products: Product[];
   safetyNotes: string[];
-  environmentalImpact?: string; // Used for Lewis Structure image of main product
+  environmentalImpact?: string;
 }
 
 export interface OrganicCompoundInfo {
@@ -91,6 +97,8 @@ export interface OrganicCompoundInfo {
   name: string;
   formula: string;
   family: string;
+  functionalGroups?: string[];
+  commercialNames?: string;
   description: string;
   uses: string;
   stateAtSTP: string;
@@ -102,6 +110,7 @@ export interface OrganicCompoundInfo {
   density?: string;
   isomersCount?: string | number;
   toxicityDetails?: string;
+  flammabilityRating?: string;
 }
 
 export interface BiomoleculeInfo {
@@ -118,6 +127,7 @@ export interface BiomoleculeInfo {
   metabolicRole?: string;
   dietarySources?: string;
   clinicalImplications?: string;
+  associatedDiseases?: string;
 }
 
 export interface GalvanicCellInfo {
@@ -131,6 +141,7 @@ export interface GalvanicCellInfo {
   diagramImage: string;
   applications?: string;
   gibbsEnergy?: string;
+  theoreticalYieldInfo?: string;
 }
 
 export interface ThermoChemistryInfo {
@@ -147,6 +158,7 @@ export interface ThermoChemistryInfo {
   keq?: string;
   activationEnergy?: string;
   speedFactors?: string[];
+  heatCapacityInfo?: string;
 }
 
 export interface SolutionChemistryInfo {
@@ -162,6 +174,7 @@ export interface SolutionChemistryInfo {
   conductivity?: string;
   boilingPointElevation?: string;
   freezingPointDepression?: string;
+  osmoticPressure?: string;
 }
 
 export interface BatteryInfo {
@@ -173,6 +186,7 @@ export interface BatteryInfo {
     diagramImage: string;
     energyDensity?: string;
     cycleLife?: string;
+    internalResistance?: string;
     anodeMaterial?: string;
     cathodeMaterial?: string;
     electrolyte?: string;
@@ -194,12 +208,13 @@ export interface HistoryInfo {
 }
 
 export interface ElectrolysisInfo {
+  id: string;
   electrolyte: string;
-  diagramImage: string;
   minVoltage: string;
+  anodeProduct: string;
   anodeReaction: string;
+  cathodeProduct: string;
   cathodeReaction: string;
+  diagramImage: string;
   applications: string;
-  anodeProduct?: string;
-  cathodeProduct?: string;
 }

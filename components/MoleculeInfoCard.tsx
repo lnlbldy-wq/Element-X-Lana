@@ -66,13 +66,13 @@ export const MoleculeInfoCard: React.FC<MoleculeInfoCardProps> = ({ reaction, on
             </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-grow overflow-y-auto scrollbar-hide px-6 py-5 space-y-6 animate-fade-in" key={activeTab}>
+        {/* Content Area */}
+        <div className="flex-grow overflow-y-auto scrollbar-hide px-6 py-5 space-y-6 animate-fade-in">
             
             {activeTab === 'general' && (
-                <>
+                <div className="space-y-6">
                     <section>
-                        <h3 className="text-cyan-400 font-bold text-sm mb-3 text-center">تركيب لويس (Lewis Structure)</h3>
+                        <h3 className="text-cyan-400 font-bold text-[10px] uppercase mb-3 text-center tracking-widest">التمثيل الجزيئي</h3>
                         <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-700/50 flex justify-center shadow-inner min-h-[160px] items-center text-center">
                             {reaction.lewisStructure ? (
                                 <img src={reaction.lewisStructure} alt="Lewis" className="max-h-40 object-contain" />
@@ -85,102 +85,130 @@ export const MoleculeInfoCard: React.FC<MoleculeInfoCardProps> = ({ reaction, on
                     </section>
 
                     {reaction.balancedFormationEquation && (
-                        <section className="bg-slate-900/50 p-5 rounded-3xl border border-emerald-500/30">
+                        <section className="bg-slate-900/50 p-5 rounded-3xl border border-emerald-500/30 shadow-lg">
                             <h3 className="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2">
                                 <span>⚖️</span> معادلة التكوين الموزونة
                             </h3>
-                            <code dir="ltr" className="text-lg font-mono text-white block text-center p-2 bg-black/30 rounded-xl">
+                            <code dir="ltr" className="text-lg font-mono text-white block text-center p-3 bg-black/30 rounded-xl border border-emerald-500/10">
                                 {reaction.balancedFormationEquation}
                             </code>
                         </section>
                     )}
 
-                    <section className="space-y-0">
+                    <section className="space-y-0 bg-slate-800/20 p-4 rounded-3xl border border-slate-700/20">
                         <PropertyRow label="الكتلة المولية" value={reaction.molarMass} />
                         <PropertyRow label="الحالة في STP" value={reaction.state} />
                         <PropertyRow label="الهندسة الجزيئية" value={reaction.molecularGeometry} />
                         <PropertyRow label="نوع الرابطة" value={reaction.bondType} />
-                        <PropertyRow label="الحمضية/القاعدية" value={reaction.acidBase} color="text-amber-400" />
+                        <PropertyRow label="فرق السالبية" value={reaction.electronegativityDifference} color="text-yellow-400" />
                     </section>
-                </>
+                </div>
             )}
 
             {activeTab === 'academic' && (
-                <section className="space-y-6 animate-slide-up">
-                    {reaction.formationBalancingSteps && (
-                        <div className="bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-900/30 relative overflow-hidden group">
-                            <h3 className="text-emerald-400 font-bold text-lg mb-4 text-right border-r-4 border-emerald-500 pr-3">طريقة وزن المعادلة</h3>
-                            <div className="text-slate-100 text-md leading-relaxed text-right whitespace-pre-wrap font-medium">
+                <div className="space-y-6 animate-slide-up">
+                    {reaction.formationBalancingSteps ? (
+                        <div className="bg-emerald-950/20 p-6 rounded-[2rem] border border-emerald-900/30 relative overflow-hidden group shadow-lg">
+                            <h3 className="text-emerald-400 font-bold text-lg mb-4 text-right border-r-4 border-emerald-500 pr-3">خطوات وزن المعادلة بالتفصيل</h3>
+                            <div className="text-slate-100 text-sm leading-relaxed text-right whitespace-pre-wrap font-medium">
                                 {reaction.formationBalancingSteps}
                             </div>
                         </div>
+                    ) : (
+                        <div className="p-4 bg-slate-800/20 rounded-2xl border border-slate-700/20 text-center italic text-slate-500 text-xs">جاري تحليل خطوات الوزن...</div>
                     )}
 
-                    <div className="bg-cyan-950/20 p-6 rounded-[2rem] border border-cyan-900/30">
-                        <h3 className="text-cyan-400 font-bold text-lg mb-4 text-right border-r-4 border-cyan-500 pr-3">التحليل الأكاديمي والفيزيائي</h3>
-                        <div className="text-slate-300 text-md leading-relaxed text-right whitespace-pre-wrap">
-                            {reaction.academicContext || "جاري جلب التحليل الأكاديمي الشامل لهذا الجزيء..."}
+                    <div className="bg-cyan-950/20 p-6 rounded-[2rem] border border-cyan-900/30 shadow-lg">
+                        <h3 className="text-cyan-400 font-bold text-lg mb-4 text-right border-r-4 border-cyan-500 pr-3">التحليل الأكاديمي الشامل</h3>
+                        <div className="text-slate-300 text-sm leading-relaxed text-right whitespace-pre-wrap">
+                            {reaction.academicContext || "جاري جلب التحليل الأكاديمي الرصين..."}
                         </div>
                     </div>
-                </section>
+                </div>
             )}
 
             {activeTab === 'advanced' && (
-                <section className="grid grid-cols-1 gap-3">
-                     <PropertyRow label="التهجين" value={reaction.hybridization} />
-                     <PropertyRow label="القطبية" value={reaction.polarity} />
-                     <PropertyRow label="الذوبانية في الماء" value={reaction.solubilityInWater} />
-                     <PropertyRow label="الذوبانية في المذيبات العضوية" value={reaction.solubilityInOrganicSolvents} />
-                     <PropertyRow label="الوصف البلوري" value={reaction.crystalDescription} />
-                     <div className="p-4 bg-slate-800/50 rounded-2xl border border-slate-700/50">
-                        <h4 className="text-cyan-500 font-bold text-[10px] uppercase mb-1 tracking-widest">الوصف المغناطيسي</h4>
-                        <p className="text-slate-300 text-xs leading-relaxed">{reaction.magneticDescription}</p>
+                <div className="space-y-4 animate-slide-up">
+                    <section className="bg-slate-800/20 p-5 rounded-[2rem] border border-slate-700/20 space-y-0">
+                         <PropertyRow label="التهجين" value={reaction.hybridization} />
+                         <PropertyRow label="القطبية" value={reaction.polarity} />
+                         <PropertyRow label="عزم الثنائي قطب" value={reaction.dipoleMoment} color="text-indigo-400" />
+                         <PropertyRow label="طاقة الرابطة" value={reaction.bondEnthalpy} color="text-rose-400" />
+                         <PropertyRow label="الاستقرار الحراري" value={reaction.thermalStability} color="text-orange-400" />
+                         <PropertyRow label="الذوبانية في الماء" value={reaction.solubilityInWater} />
+                         <PropertyRow label="الوصف البلوري" value={reaction.crystalDescription} />
+                    </section>
+                    
+                     <div className="p-6 bg-indigo-500/10 rounded-[2rem] border-2 border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.1)]">
+                        <h4 className="text-indigo-400 font-black text-[11px] uppercase mb-3 tracking-[0.2em] border-b border-indigo-500/20 pb-2 flex items-center gap-2">
+                           <span className="text-lg">🧲</span> الوصف المغناطيسي الدقيق
+                        </h4>
+                        <p className="text-slate-200 text-sm leading-relaxed text-right font-medium">
+                           {reaction.magneticDescription || "جاري تحليل الخواص المغناطيسية بناءً على التوزيع الإلكتروني..."}
+                        </p>
                      </div>
-                </section>
+                </div>
             )}
 
             {activeTab === 'history' && (
-                <section className="bg-slate-900/50 rounded-[2rem] p-6 border border-amber-900/20 relative overflow-hidden group min-h-[250px]">
-                    <div className="absolute top-4 left-4 text-4xl opacity-10 group-hover:opacity-20 transition-opacity">📜</div>
-                    <h3 className="text-amber-500 font-bold text-lg mb-4">قصة الاكتشاف</h3>
-                    <p className="text-slate-300 italic text-sm leading-relaxed text-right border-r-4 border-amber-600/30 pr-5">
-                        "{reaction.discoveryStory || "لا توجد تفاصيل تاريخية متوفرة لهذا الجزيء."}"
-                        {reaction.discoverer && <span className="block mt-4 font-bold text-amber-200/80 not-italic">المكتشف: {reaction.discoverer} ({reaction.discoveryYear})</span>}
-                    </p>
-                </section>
+                <div className="bg-slate-900/50 rounded-[2rem] p-8 border border-amber-900/20 relative overflow-hidden group min-h-[300px] shadow-lg">
+                    <div className="absolute top-4 left-4 text-6xl opacity-10 group-hover:opacity-20 transition-opacity">📜</div>
+                    <h3 className="text-amber-500 font-bold text-xl mb-6 flex items-center gap-2">
+                       <span className="w-1.5 h-6 bg-amber-500 rounded-full"></span>
+                       قصة الاكتشاف التاريخي
+                    </h3>
+                    <div className="space-y-6">
+                       <p className="text-slate-300 italic text-md leading-relaxed text-right pr-2">
+                           "{reaction.discoveryStory || "لا توجد تفاصيل تاريخية متوفرة لهذا الجزيء حالياً."}"
+                       </p>
+                       {(reaction.discoverer || reaction.discoveryYear) && (
+                          <div className="bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10">
+                             <p className="text-amber-200 font-bold text-sm">
+                                <span className="text-slate-500 font-medium ml-2">بواسطة:</span> {reaction.discoverer || "غير معروف"}
+                             </p>
+                             <p className="text-amber-200 font-bold text-sm mt-1">
+                                <span className="text-slate-500 font-medium ml-2">في عام:</span> {reaction.discoveryYear || "---"}
+                             </p>
+                          </div>
+                       )}
+                    </div>
+                </div>
             )}
 
             {activeTab === 'safety' && (
-                <section className="space-y-4">
-                    <div className="flex flex-wrap justify-center gap-3">
-                        {Array.isArray(reaction.safety?.ghsSymbols) ? reaction.safety?.ghsSymbols.map((s, i) => (
-                            <div key={i} className="flex flex-col items-center bg-white p-2 rounded-xl w-20 shadow-lg transition-transform hover:-translate-y-1">
-                                <span className="text-3xl mb-1">{GHS_MAP[s]?.emoji || '⚠️'}</span>
-                                <span className="text-[9px] font-bold text-slate-800 uppercase text-center leading-tight">{GHS_MAP[s]?.label || s}</span>
+                <div className="space-y-6 animate-slide-up">
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {Array.isArray(reaction.safety?.ghsSymbols) && reaction.safety.ghsSymbols.map((s, i) => (
+                            <div key={i} className="flex flex-col items-center bg-white p-3 rounded-2xl w-24 shadow-xl transition-all hover:-translate-y-2 hover:shadow-cyan-500/10">
+                                <span className="text-4xl mb-2">{GHS_MAP[s]?.emoji || '⚠️'}</span>
+                                <span className="text-[10px] font-black text-slate-800 uppercase text-center leading-tight tracking-tighter">{GHS_MAP[s]?.label || s}</span>
                             </div>
-                        )) : (reaction.safety?.ghsSymbols && <div className="text-xs text-slate-400 italic">بيانات السلامة: {String(reaction.safety.ghsSymbols)}</div>)}
+                        ))}
                     </div>
-                    <div className="bg-red-950/20 p-6 rounded-[2rem] border border-red-900/30">
-                        <h3 className="text-red-400 font-bold text-md mb-3">تحذيرات السلامة</h3>
-                        <ul className="space-y-3">
+                    <div className="bg-red-950/20 p-6 rounded-[2.5rem] border border-red-900/30 shadow-lg">
+                        <h3 className="text-red-400 font-bold text-md mb-4 flex items-center gap-2">
+                           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                           تحذيرات وإرشادات السلامة
+                        </h3>
+                        <ul className="space-y-4">
                             {Array.isArray(reaction.safety?.warnings) ? reaction.safety?.warnings.map((w, i) => (
-                                <li key={i} className="text-red-200 text-sm flex gap-3 text-right items-start">
-                                    <span className="text-red-500 text-lg mt-0.5">•</span> <span>{w}</span>
+                                <li key={i} className="text-red-200 text-sm flex gap-4 text-right items-start group">
+                                    <span className="bg-red-500/20 text-red-500 p-1.5 rounded-lg text-xs font-black transition-colors group-hover:bg-red-500 group-hover:text-white">{i + 1}</span>
+                                    <span className="leading-relaxed font-medium">{w}</span>
                                 </li>
                             )) : (
-                                <li className="text-red-200 text-sm text-right">
-                                    {String(reaction.safety?.warnings || "لا توجد تحذيرات خاصة حالياً.")}
-                                </li>
+                                <li className="text-red-200 text-sm text-right italic opacity-60">لا توجد تحذيرات إضافية.</li>
                             )}
                         </ul>
                     </div>
-                </section>
+                </div>
             )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-[#1e293b] border-t border-slate-700/50">
-            <button onClick={onNewReaction} className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-900 py-3 rounded-2xl font-bold transition-all shadow-xl text-md transform active:scale-95">
+        <div className="p-6 bg-[#1e293b] border-t border-slate-700/50 flex-shrink-0">
+            <button onClick={onNewReaction} className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-900 py-4 rounded-2xl font-black transition-all shadow-xl text-lg transform active:scale-95 flex items-center justify-center gap-3">
+                <span className="text-2xl">↺</span>
                 تفاعل جديد
             </button>
         </div>

@@ -11,100 +11,83 @@ const InfoRow: React.FC<{ label: string; value?: React.ReactNode }> = ({ label, 
     if (!value) return null;
     return (
         <div className="flex justify-between items-start py-3 border-b border-slate-300 dark:border-slate-700 last:border-b-0">
-            <dt className="text-md text-cyan-600 dark:text-cyan-400 font-semibold">{label}</dt>
-            <dd className="text-md text-slate-700 dark:text-slate-200 text-left">{value}</dd>
+            <dt className="text-xs text-cyan-600 dark:text-cyan-400 font-black uppercase tracking-widest">{label}</dt>
+            <dd className="text-sm text-slate-700 dark:text-slate-200 text-left font-bold">{value}</dd>
         </div>
     );
 };
 
 export const BatteryInfoCard: React.FC<BatteryInfoCardProps> = ({ info, onNew }) => {
     return (
-        <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl p-6 w-full max-w-3xl m-4 text-slate-800 dark:text-white relative flex flex-col animate-slide-up max-h-[90vh] overflow-y-auto scrollbar-hide">
-            <h2 className="text-3xl font-bold text-cyan-600 dark:text-cyan-300 mb-2 text-center">{info.name}</h2>
-            <p className="text-xl font-mono text-slate-600 dark:text-slate-300 mb-6 text-center">{info.type}</p>
+        <div className="w-full max-w-4xl mx-auto py-10 px-4 animate-slide-up pb-32">
+            <div className="bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-[3rem] overflow-hidden shadow-2xl flex flex-col">
+                <div className="p-8 text-center bg-gradient-to-b from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-800">
+                    <h2 className="text-3xl font-black text-cyan-600 dark:text-cyan-300 mb-2">{info.name}</h2>
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">{info.type}</p>
+                </div>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1 bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 text-center">
-                    <h4 className="text-slate-500 dark:text-slate-400 font-semibold mb-1">الجهد الاسمي</h4>
-                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" dir="ltr">{info.nominalVoltage}</p>
-                </div>
-                <div className="flex-1 bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 text-center">
-                    <h4 className="text-slate-500 dark:text-slate-400 font-semibold mb-1">كثافة الطاقة</h4>
-                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" dir="ltr">{info.energyDensity}</p>
-                </div>
-                 <div className="flex-1 bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 text-center">
-                    <h4 className="text-slate-500 dark:text-slate-400 font-semibold mb-1">العمر الافتراضي</h4>
-                    <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400" dir="ltr">{info.cycleLife}</p>
-                </div>
-            </div>
-
-            <div className="w-full bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 mb-4">
-                <h3 className="text-lg text-cyan-600 dark:text-cyan-400 font-semibold mb-2 text-center">مكونات البطارية</h3>
-                <div className="bg-white dark:bg-slate-900 p-2 rounded-md shadow-inner flex justify-center items-center min-h-[200px]">
-                    {info.diagramImage ? (
-                        <img src={info.diagramImage} alt={`Diagram of ${info.name}`} className="max-w-full h-auto" />
-                    ) : (
-                        <p className="animate-pulse text-slate-500 dark:text-slate-400">...جاري تحميل المخطط</p>
-                    )}
-                </div>
-            </div>
-
-            <div className="w-full text-right bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 mb-4">
-                <h3 className="text-lg text-cyan-600 dark:text-cyan-400 font-semibold mb-2">المواصفات الفنية</h3>
-                <dl>
-                    <InfoRow label="مادة المصعد (Anode)" value={info.anodeMaterial} />
-                    <InfoRow label="مادة المهبط (Cathode)" value={info.cathodeMaterial} />
-                    <InfoRow label="الإلكتروليت" value={info.electrolyte} />
-                    <InfoRow label="خصائص الشحن" value={info.chargingCharacteristics} />
-                    <InfoRow label="معدل التفريغ الذاتي" value={info.selfDischargeRate} />
-                </dl>
-            </div>
-
-             <div className="grid md:grid-cols-2 gap-4 mb-4 text-center">
-                <div className="w-full bg-red-100 dark:bg-red-900/50 p-4 rounded-lg border border-red-300 dark:border-red-700">
-                  <h3 className="text-lg text-red-700 dark:text-red-400 font-semibold mb-2">تفاعل المصعد</h3>
-                  <code dir="ltr" className="text-md font-mono text-red-900 dark:text-red-200">{info.anodeReaction}</code>
-                </div>
-                <div className="w-full bg-blue-100 dark:bg-blue-900/50 p-4 rounded-lg border border-blue-300 dark:border-blue-700">
-                  <h3 className="text-lg text-blue-700 dark:text-blue-400 font-semibold mb-2">تفاعل المهبط</h3>
-                  <code dir="ltr" className="text-md font-mono text-blue-900 dark:text-blue-200">{info.cathodeReaction}</code>
-                </div>
-            </div>
-
-            {/* Safety & Environment Section */}
-            <div className="grid md:grid-cols-2 gap-4 mb-4">
-                 {info.safetyRisks && (
-                    <div className="bg-orange-100 dark:bg-orange-900/30 p-4 rounded-lg border border-orange-300 dark:border-orange-700">
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xl">⚠️</span>
-                            <h3 className="text-lg font-bold text-orange-800 dark:text-orange-200">مخاطر السلامة</h3>
+                <div className="p-8 space-y-8">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 text-center shadow-md">
+                            <h4 className="text-[9px] text-slate-500 font-black mb-1 uppercase tracking-widest">الجهد الاسمي</h4>
+                            <p className="text-xl font-black text-emerald-600 dark:text-emerald-400" dir="ltr">{info.nominalVoltage}</p>
                         </div>
-                        <p className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed">{info.safetyRisks}</p>
-                    </div>
-                )}
-                 {info.environmentalRecycling && (
-                    <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-lg border border-green-300 dark:border-green-700">
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-xl">♻️</span>
-                            <h3 className="text-lg font-bold text-green-800 dark:text-green-200">الأثر البيئي والتدوير</h3>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 text-center shadow-md">
+                            <h4 className="text-[9px] text-slate-500 font-black mb-1 uppercase tracking-widest">المقاومة الداخلية</h4>
+                            <p className="text-xl font-black text-amber-600 dark:text-amber-400" dir="ltr">{info.internalResistance || 'N/A'}</p>
                         </div>
-                        <p className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed">{info.environmentalRecycling}</p>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 text-center shadow-md">
+                            <h4 className="text-[9px] text-slate-500 font-black mb-1 uppercase tracking-widest">كثافة الطاقة</h4>
+                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400" dir="ltr">{info.energyDensity}</p>
+                        </div>
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-700 text-center shadow-md">
+                            <h4 className="text-[9px] text-slate-500 font-black mb-1 uppercase tracking-widest">عدد الدورات</h4>
+                            <p className="text-xl font-black text-pink-600 dark:text-pink-400" dir="ltr">{info.cycleLife}</p>
+                        </div>
                     </div>
-                )}
-            </div>
 
-            <div className="w-full text-right bg-white/50 dark:bg-slate-900/50 p-4 rounded-lg border border-slate-300 dark:border-slate-700 mb-4">
-                <h3 className="text-lg text-cyan-600 dark:text-cyan-400 font-semibold mb-2">التطبيقات الشائعة</h3>
-                <p className="text-md text-slate-700 dark:text-slate-300 leading-relaxed">{info.applications}</p>
-            </div>
+                    <div className="bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-inner flex flex-col items-center">
+                        <h3 className="text-[10px] text-slate-500 font-black mb-4 uppercase tracking-widest">مخطط المكونات</h3>
+                        <img src={info.diagramImage} alt={info.name} className="max-h-64 object-contain" />
+                    </div>
 
-            <div className="w-full mt-4 flex flex-col gap-3">
-                <button
-                    onClick={onNew}
-                    className="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors w-full text-lg mt-2"
-                >
-                    تحليل جديد
-                </button>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-red-500/5 dark:bg-red-900/10 p-5 rounded-[2rem] border border-red-500/20 text-center">
+                            <h3 className="text-xs text-red-600 dark:text-red-400 font-black mb-3 uppercase">تفاعل المصعد (Anode)</h3>
+                            <code dir="ltr" className="text-[10px] font-mono font-bold text-slate-800 dark:text-red-100">{info.anodeReaction || '---'}</code>
+                            <p className="mt-2 text-[9px] text-slate-500 font-bold italic">{info.anodeMaterial}</p>
+                        </div>
+                        <div className="bg-blue-500/5 dark:bg-blue-900/10 p-5 rounded-[2rem] border border-blue-500/20 text-center">
+                            <h3 className="text-xs text-blue-600 dark:text-blue-400 font-black mb-3 uppercase">تفاعل المهبط (Cathode)</h3>
+                            <code dir="ltr" className="text-[10px] font-mono font-bold text-slate-800 dark:text-blue-100">{info.cathodeReaction || '---'}</code>
+                            <p className="mt-2 text-[9px] text-slate-500 font-bold italic">{info.cathodeMaterial}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-50 dark:bg-slate-900/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700">
+                        <dl className="space-y-0">
+                            <InfoRow label="الإلكتروليت" value={info.electrolyte} />
+                            <InfoRow label="خصائص الشحن" value={info.chargingCharacteristics} />
+                            <InfoRow label="معدل التفريغ الذاتي" value={info.selfDischargeRate} />
+                            <InfoRow label="التطبيقات الأساسية" value={info.applications} />
+                        </dl>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <section className="bg-orange-500/5 p-6 rounded-3xl border border-orange-500/20">
+                            <h3 className="text-orange-600 dark:text-orange-400 font-black text-xs mb-3 uppercase">🚨 مخاطر السلامة</h3>
+                            <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed text-right">{info.safetyRisks}</p>
+                        </section>
+                        <section className="bg-green-500/5 p-6 rounded-3xl border border-green-500/20">
+                            <h3 className="text-green-600 dark:text-green-400 font-black text-xs mb-3 uppercase">♻️ البيئة والتدوير</h3>
+                            <p className="text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed text-right">{info.environmentalRecycling}</p>
+                        </section>
+                    </div>
+                </div>
+
+                <div className="p-8 bg-slate-200/50 dark:bg-slate-800/50 border-t border-slate-300 dark:border-slate-700">
+                    <button onClick={onNew} className="w-full bg-lime-600 hover:bg-lime-500 text-white py-4 rounded-2xl font-black shadow-xl transition-all">تحليل جديد</button>
+                </div>
             </div>
         </div>
     );
