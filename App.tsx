@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Header } from './components/Header';
@@ -55,14 +56,17 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
+    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
     if (!process.env.API_KEY) {
-      setError("مفتاح API غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
+      setError("مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
     }
   }, []);
 
   const generateAIImage = async (query: string): Promise<string | null> => {
+    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
     if (!process.env.API_KEY) return null;
     try {
+      // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Pure white background, high-quality 2D scientific Lewis dot diagram of ${query}. Black lines, high contrast. Professional textbook illustration style. Clear labels.`;
       const response = await ai.models.generateContent({
@@ -75,11 +79,13 @@ const App: React.FC = () => {
   };
 
   const callGeminiAI = async (prompt: string, systemInstruction: string, schema?: any) => {
+      // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
       if (!process.env.API_KEY) {
-        setError("مفتاح API غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
+        setError("مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
         return null;
       }
       try {
+          // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
           const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
           const response = await ai.models.generateContent({
               model: 'gemini-3-flash-preview',

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -40,6 +41,7 @@ export const LocalAILab: React.FC = () => {
         setQuestion('');
         setIsLoading(true);
         
+        // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
         if (!process.env.API_KEY) {
             setMessages(prev => [...prev, {
                 role: 'ai',
@@ -50,6 +52,7 @@ export const LocalAILab: React.FC = () => {
         }
 
         try {
+            // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-flash-preview',
