@@ -14,9 +14,6 @@ export default defineConfig({
       '@': resolve(__dirname, './'),
     },
   },
-  define: {
-    'process.env': {}
-  },
   build: {
     target: 'esnext'
   }
