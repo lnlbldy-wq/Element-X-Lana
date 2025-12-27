@@ -56,17 +56,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
-    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
-    if (!process.env.API_KEY) {
-      setError("مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
-    }
+    // FIX: Per coding guidelines, the API key is assumed to be available from process.env.API_KEY.
+    // The check for the key has been removed as it is assumed to exist.
   }, []);
 
   const generateAIImage = async (query: string): Promise<string | null> => {
-    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
-    if (!process.env.API_KEY) return null;
+    // FIX: Replaced import.meta.env.VITE_API_KEY with process.env.API_KEY and removed existence check, as per coding guidelines.
     try {
-      // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Pure white background, high-quality 2D scientific Lewis dot diagram of ${query}. Black lines, high contrast. Professional textbook illustration style. Clear labels.`;
       const response = await ai.models.generateContent({
@@ -79,13 +75,8 @@ const App: React.FC = () => {
   };
 
   const callGeminiAI = async (prompt: string, systemInstruction: string, schema?: any) => {
-      // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
-      if (!process.env.API_KEY) {
-        setError("مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
-        return null;
-      }
+      // FIX: Replaced import.meta.env.VITE_API_KEY with process.env.API_KEY and removed existence check/error, as per coding guidelines.
       try {
-          // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
           const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
           const response = await ai.models.generateContent({
               model: 'gemini-3-flash-preview',
@@ -240,10 +231,8 @@ const App: React.FC = () => {
       setOrganicResult(null); setBiomoleculeResult(null);
       setElectroResult(null); setThermoResult(null); setSolutionResult(null);
       setBatteryResult(null); setHistoryResult(null); 
-      // Do not reset the API key error so the user can see it
-      if (error && !error.includes("API")) {
-        setError(null);
-      }
+      // FIX: The API key error is no longer set per guidelines, so this check is simplified to always clear errors.
+      setError(null);
   };
 
   if (appState === 'welcome') return <WelcomeScreen onStart={() => setAppState('simulation')} />;

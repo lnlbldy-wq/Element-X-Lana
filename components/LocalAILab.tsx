@@ -41,18 +41,8 @@ export const LocalAILab: React.FC = () => {
         setQuestion('');
         setIsLoading(true);
         
-        // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
-        if (!process.env.API_KEY) {
-            setMessages(prev => [...prev, {
-                role: 'ai',
-                text: '❌ مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة في إعدادات النشر.'
-            }]);
-            setIsLoading(false);
-            return;
-        }
-
+        // FIX: Replaced import.meta.env.VITE_API_KEY with process.env.API_KEY and removed existence check/error, as per coding guidelines.
         try {
-            // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-flash-preview',

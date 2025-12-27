@@ -36,9 +36,7 @@ const isSafetyError = (error: any): boolean => {
 };
 
 const fetchCompoundImage = async (name: string, formula: string): Promise<string | 'safety_block' | null> => {
-    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
-    if (!process.env.API_KEY) return null;
-    // FIX: Use process.env.API_KEY instead of import.meta.env.VITE_API_KEY
+    // FIX: Replaced import.meta.env.VITE_API_KEY with process.env.API_KEY and removed existence check, as per coding guidelines.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const imagePrompt = `Scientific 3D ball-and-stick molecule model of ${name} (${formula}). Clear white background. Minimalist aesthetic. Vibrant colors.`;
     
