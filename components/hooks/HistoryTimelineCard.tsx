@@ -40,7 +40,7 @@ export const HistoryTimelineCard: React.FC<{ info: HistoryInfo; onNew: () => voi
                                         <span className="text-[10px] bg-slate-800 px-3 py-1 rounded-full text-slate-400 font-bold">{event.scientist}</span>
                                     </div>
                                     <h4 className="text-white font-bold text-lg mb-2">{event.title}</h4>
-                                    <p className="text-slate-400 text-sm leading-relaxed text-right">{event.description}</p>
+                                    <p className="text-slate-400 text-sm leading-relaxed">{event.description}</p>
                                 </div>
                             </div>
                         ))}

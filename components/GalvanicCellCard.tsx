@@ -27,11 +27,11 @@ export const GalvanicCellCard: React.FC<{ info: GalvanicCellInfo; onNew: () => v
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-700 text-center shadow-lg">
                         <span className="text-[10px] text-slate-400 block mb-1 uppercase font-black">E°cell القياسي</span>
-                        <span dir="ltr" className="text-3xl font-mono font-black text-emerald-400">{info.cellPotential || '0.00V'}</span>
+                        <span dir="ltr" className="text-2xl font-mono font-black text-emerald-400">{info.cellPotential || '0.00V'}</span>
                     </div>
                     <div className="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-700 text-center shadow-lg">
                         <span className="text-[10px] text-slate-400 block mb-1 uppercase font-black">طاقة غيبس (ΔG°)</span>
-                        <span dir="ltr" className="text-3xl font-mono font-black text-amber-400">{info.gibbsEnergy || '0.00kJ'}</span>
+                        <span dir="ltr" className="text-2xl font-mono font-black text-amber-400">{info.gibbsEnergy || '0.00kJ'}</span>
                     </div>
                 </div>
 

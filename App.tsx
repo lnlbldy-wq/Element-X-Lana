@@ -1,81 +1,74 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ReactionCanvas } from './components/ReactionCanvas';
 import { MoleculeInfoCard } from './components/MoleculeInfoCard';
-import { CompoundReactionResult } from './components/CompoundReactionResult';
 import { WelcomeScreen } from './components/WelcomeScreen';
-import { ReactionSelection } from './components/ReactionSelection';
-import { OrganicCompoundInfoCard } from './components/HydrocarbonInfoCard';
+import { CompoundSelector } from './components/CompoundSelector';
+import { CompoundReactionResult } from './components/CompoundReactionResult';
+import { OrganicCompoundInfoCard } from './components/OrganicCompoundInfoCard';
 import { BiomoleculeInfoCard } from './components/BiomoleculeInfoCard';
 import { GalvanicCellCard } from './components/GalvanicCellCard';
 import { ThermoChemistryCard } from './components/ThermoChemistryCard';
 import { SolutionChemistryCard } from './components/SolutionChemistryCard';
 import { BatteryInfoCard } from './components/BatteryInfoCard';
 import { HistoryTimelineCard } from './components/HistoryTimelineCard';
-import { CompoundSelector } from './components/CompoundSelector';
 import { LocalAILab } from './components/LocalAILab';
 import { ATOMS } from './constants';
-import type { Atom, Reaction, CompoundReaction, OrganicCompoundInfo, BiomoleculeInfo, GalvanicCellInfo, ThermoChemistryInfo, SolutionChemistryInfo, BatteryInfo, HistoryInfo } from './types';
+import type { Atom, Reaction, CompoundReaction, OrganicCompoundInfo, BiomoleculeInfo, GalvanicCellInfo, ThermoChemistryInfo, SolutionChemistryInfo, BatteryComparisonInfo, BatteryInfo, HistoryInfo } from './types';
 
 type AppState = 'welcome' | 'simulation';
 type SimulationMode = 'atoms' | 'compounds' | 'organic' | 'biochemistry' | 'electrochemistry' | 'thermochemistry' | 'solution' | 'batteries' | 'history' | 'ai-lab';
 type Theme = 'light' | 'dark';
 
-const MODE_NAMES: Record<SimulationMode, string> = {
-    'atoms': 'كيمياء الذرات والأيونات',
-    'compounds': 'تفاعلات المركبات الكيميائية',
-    'organic': 'الكيمياء العضوية',
-    'biochemistry': 'الكيمياء الحيوية',
-    'electrochemistry': 'الكيمياء الكهربائية',
-    'thermochemistry': 'الكيمياء الحرارية',
-    'solution': 'كيمياء المحاليل والتركيزات',
-    'batteries': 'تكنولوجيا البطاريات وتخزين الطاقة',
-    'history': 'تاريخ الكيمياء والعلماء',
-    'ai-lab': 'مختبر الحوسبة الكيميائية الذكي'
-};
-
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>('welcome');
   const [simulationMode, setSimulationMode] = useState<SimulationMode>('atoms');
-  const [theme, setTheme] = useState<Theme>('light');
-  const [isComparisonMode, setIsComparisonMode] = useState(false);
+  const [theme, setTheme] = useState<Theme>('dark');
   
   const [placedAtoms, setPlacedAtoms] = useState<Atom[]>([]);
-  const [foundReactions, setFoundReactions] = useState<Reaction[] | null>(null);
   const [selectedReaction, setSelectedReaction] = useState<Reaction | null>(null);
+  const [compoundReactionResult, setCompoundReactionResult] = useState<CompoundReaction | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('جاري استحضار البيانات...');
   const [error, setError] = useState<string | null>(null);
   
-  const [compoundReactionResult, setCompoundReactionResult] = useState<CompoundReaction | null>(null);
+  const [organicResult, setOrganicResult] = useState<OrganicCompoundInfo | null>(null);
+  const [biomoleculeResult, setBiomoleculeResult] = useState<BiomoleculeInfo | null>(null);
+  const [electroResult, setElectroResult] = useState<GalvanicCellInfo | null>(null);
+  const [thermoResult, setThermoResult] = useState<ThermoChemistryInfo | null>(null);
+  const [solutionResult, setSolutionResult] = useState<SolutionChemistryInfo | null>(null);
+  const [batteryResult, setBatteryResult] = useState<BatteryComparisonInfo | BatteryInfo | null>(null);
+  const [historyResult, setHistoryResult] = useState<HistoryInfo | null>(null);
+
   const [reactant1, setReactant1] = useState('');
   const [reactant2, setReactant2] = useState('');
 
-  // Data States
-  const [organicInfo, setOrganicInfo] = useState<OrganicCompoundInfo | null>(null);
-  const [organicInfo2, setOrganicInfo2] = useState<OrganicCompoundInfo | null>(null);
-  const [biomoleculeInfo, setBiomoleculeInfo] = useState<BiomoleculeInfo | null>(null);
-  const [biomoleculeInfo2, setBiomoleculeInfo2] = useState<BiomoleculeInfo | null>(null);
-  const [galvanicInfo, setGalvanicInfo] = useState<GalvanicCellInfo | null>(null);
-  const [galvanicInfo2, setGalvanicInfo2] = useState<GalvanicCellInfo | null>(null);
-  const [thermoInfo, setThermoInfo] = useState<ThermoChemistryInfo | null>(null);
-  const [thermoInfo2, setThermoInfo2] = useState<ThermoChemistryInfo | null>(null);
-  const [solutionInfo, setSolutionInfo] = useState<SolutionChemistryInfo | null>(null);
-  const [solutionInfo2, setSolutionInfo2] = useState<SolutionChemistryInfo | null>(null);
-  const [batteryInfo, setBatteryInfo] = useState<BatteryInfo | null>(null);
-  const [batteryInfo2, setBatteryInfo2] = useState<BatteryInfo | null>(null);
-  const [historyInfo, setHistoryInfo] = useState<HistoryInfo | null>(null);
-  const [historyInfo2, setHistoryInfo2] = useState<HistoryInfo | null>(null);
+  const [isComparisonMode, setIsComparisonMode] = useState(false);
+  const [fullAtomDetails, setFullAtomDetails] = useState<Reaction | null>(null);
+
 
   const atomIdCounter = useRef(0);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (theme === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
-  }, [theme]);
+    document.documentElement.classList.add('dark');
+  }, []);
+
+  const generateAIImage = async (query: string): Promise<string | null> => {
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const prompt = `Pure white background, high-quality 2D scientific Lewis dot diagram of ${query}. Black lines, high contrast. Professional textbook illustration style. Clear labels.`;
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: { parts: [{ text: prompt }] },
+      });
+      const part = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+      return part?.inlineData ? `data:image/png;base64,${part.inlineData.data}` : null;
+    } catch (e) { return null; }
+  };
 
   const callGeminiAI = async (prompt: string, systemInstruction: string, schema?: any) => {
       try {
@@ -84,304 +77,229 @@ const App: React.FC = () => {
               model: 'gemini-3-flash-preview',
               contents: prompt,
               config: {
-                  systemInstruction: systemInstruction + " \nهام جداً: يجب أن تكون الإجابة باللغة العربية الفصحى وبصيغة JSON صالحة تماماً. استخدم الفاصلة الإنجليزية (,) فقط كفاصل بين العناصر في JSON، ولا تستخدم الفاصلة العربية (،) أبداً كجزء من بنية الكود.",
-                  responseMimeType: "application/json",
+                  systemInstruction: systemInstruction + "\nيجب أن تكون المعلومات مفصلة جداً وشاملة وأكاديمية. يمنع الاختصار. الإجابة باللغة العربية الفصحى فقط. ركز على العمق العلمي والدقة الكيميائية.",
+                  responseMimeType: schema ? "application/json" : undefined,
                   responseSchema: schema
               },
           });
-          
-          let text = response.text || '';
-          if (!text) return {};
-          
-          text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-          const sanitizedText = text.replace(/،/g, ',');
-          
-          try {
-              return JSON.parse(sanitizedText);
-          } catch (jsonErr) {
-              const match = sanitizedText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-              if (match) return JSON.parse(match[0]);
-              throw jsonErr;
-          }
-      } catch (err: any) {
-          setError("فشل في تحليل البيانات كيميائياً. يرجى المحاولة مرة أخرى.");
+          const text = response.text;
+          if (!text) return null;
+          return schema ? JSON.parse(text.trim()) : text;
+      } catch (err) {
+          console.error(err);
+          setError("فشل الاتصال بالذكاء الاصطناعي.");
           return null;
       }
   };
 
-  const generateMockImage = (query: string): string => {
-      return `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(query || 'chemical')}`;
-  };
-
   const handleAnalyzeBonds = async () => {
-    if (placedAtoms.length < 1) return;
+    const source = simulationMode === 'compounds' ? `${reactant1} + ${reactant2}` : placedAtoms.map(a => a.symbol).join(', ');
+    if (!source.trim() || source === '+') return;
+
     setIsLoading(true);
     setError(null);
-    try {
-        const atomSymbols = placedAtoms.map(a => a.symbol).join(', ');
-        const sys = `تحليل كيميائي عميق باللغة العربية للذرات: ${atomSymbols}.`;
-        const data = await callGeminiAI(`حلل تفاعل الذرات [${atomSymbols}]`, sys);
-        if (data) {
-            const reactions = Array.isArray(data) ? data : (data.reactions || []);
-            setFoundReactions(reactions.slice(0, 2));
-        }
-    } catch (e) {
-        setError("فشل تحليل الروابط الذرية.");
+    resetAll();
+
+    if (simulationMode === 'compounds') {
+        setLoadingMessage('يتم الآن تحليل التفاعل الكيميائي...');
+        try {
+            const sys = `أنت بروفيسور كيمياء عالمي متخصص في التفاعلات الكيميائية. حلل التفاعل بين المتفاعلات وقدم تحليلاً شاملاً. يجب أن تكون الإجابة شاملة جداً بكل تفاصيلها الأكاديمية والفيزيائية.`;
+            const schema = {
+                type: Type.OBJECT,
+                properties: {
+                    id: { type: Type.STRING },
+                    balancedEquation: { type: Type.STRING },
+                    reactionType: { type: Type.STRING },
+                    explanation: { type: Type.STRING },
+                    academicContext: { type: Type.STRING },
+                    balancingSteps: { type: Type.STRING },
+                    reactionMechanism: { type: Type.STRING },
+                    visualObservations: { type: Type.STRING },
+                    reactionConditions: { type: Type.STRING },
+                    thermodynamicNotes: { type: Type.STRING },
+                    safetyNotes: { type: Type.ARRAY, items: { type: Type.STRING } },
+                }
+            };
+            const data = await callGeminiAI(`تحليل شامل للتفاعل الكيميائي بين: ${source}`, sys, schema);
+            if (data) setCompoundReactionResult(data);
+        } catch (e) { setError("فشل تحليل التفاعل المركب."); }
+    } else {
+        setLoadingMessage('يتم الآن تحليل الروابط الكيميائية...');
+        try {
+            const sys = `أنت بروفيسور كيمياء عالمي متخصص في البنية الجزيئية. حلل الذرات/المتفاعلات وقدم أكثر مركب (1) احتمالية للحدوث فقط. يجب أن تكون الإجابة شاملة جداً لمركب واحد فقط بكل تفاصيله الفيزيائية والكيميائية والتاريخية والأكاديمية العميقة.`;
+            const schema = { type: Type.OBJECT, properties: { reaction: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, formula: { type: Type.STRING }, emoji: { type: Type.STRING }, bondType: { type: Type.STRING }, academicContext: { type: Type.STRING }, balancedFormationEquation: { type: Type.STRING }, formationBalancingSteps: { type: Type.STRING }, molarMass: { type: Type.STRING }, state: { type: Type.STRING }, density: { type: Type.STRING }, acidBase: { type: Type.STRING }, molecularGeometry: { type: Type.STRING }, reactionType: { type: Type.STRING }, hybridization: { type: Type.STRING }, polarity: { type: Type.STRING }, electronegativityDifference: { type: Type.STRING }, dipoleMoment: { type: Type.STRING }, vanDerWaalsRadius: { type: Type.STRING }, boilingPoint: { type: Type.STRING }, meltingPoint: { type: Type.STRING }, magneticDescription: { type: Type.STRING }, solubilityInWater: { type: Type.STRING }, solubilityInOrganicSolvents: { type: Type.STRING }, crystalDescription: { type: Type.STRING }, thermalStability: { type: Type.STRING }, bondEnthalpy: { type: Type.STRING }, discoveryStory: { type: Type.STRING }, discoverer: { type: Type.STRING }, discoveryYear: { type: Type.STRING }, electronConfiguration: { type: Type.STRING }, fullElectronConfiguration: { type: Type.STRING }, safety: { type: Type.OBJECT, properties: { warnings: { type: Type.ARRAY, items: { type: Type.STRING } }, ghsSymbols: { type: Type.ARRAY, items: { type: Type.STRING } } } } } } } };
+            const data = await callGeminiAI(`تحليل شامل للمركب الأكثر احتمالية لـ: ${source}`, sys, schema);
+            if (data?.reaction) {
+                const reactionData = data.reaction;
+                reactionData.lewisStructure = await generateAIImage(reactionData.formula);
+                setSelectedReaction(reactionData);
+            }
+        } catch (e) { setError("فشل التحليل العلمي."); }
     }
     setIsLoading(false);
   };
 
-  const handleCompoundReaction = async () => {
+  const handleGlobalSearch = async (mode: SimulationMode, q: string) => {
     setIsLoading(true);
-    setError(null);
-    try {
-        const sys = `محاكاة تفاعل كيميائي شامل باللغة العربية.`;
-        const data = await callGeminiAI(`تفاعل ${reactant1} مع ${reactant2}`, sys);
-        if (data && data.balancedEquation) {
-            data.environmentalImpactImage = generateMockImage(data.balancedEquation);
-            setCompoundReactionResult(data);
-        } else if (data) {
-            setError("لم يتم التعرف على تفاعل صالح.");
+    setLoadingMessage(`جاري استكشاف بيانات ${q}...`);
+    resetAll();
+    
+    const sys = `خبير عالمي في كيمياء ${mode}. قدم أدق التفاصيل العلمية الممكنة بشكل شامل وموسع ومحاذاة لليمين. الإجابة باللغة العربية الفصحى الأكاديمية فقط. يمنع الاختصار بتاتاً.`;
+    
+    const singleBatterySchema = { type: Type.OBJECT, properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, type: { type: Type.STRING }, nominalVoltage: { type: Type.STRING }, applications: { type: Type.STRING }, energyDensity: { type: Type.STRING }, cycleLife: { type: Type.STRING }, internalResistance: { type: Type.STRING }, anodeMaterial: { type: Type.STRING }, cathodeMaterial: { type: Type.STRING }, electrolyte: { type: Type.STRING }, chargingCharacteristics: { type: Type.STRING }, selfDischargeRate: { type: Type.STRING }, anodeReaction: { type: Type.STRING }, cathodeReaction: { type: Type.STRING }, safetyRisks: { type: Type.STRING }, environmentalRecycling: { type: Type.STRING } } };
+
+    const schemas: Record<string, any> = {
+        organic: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, formula: { type: Type.STRING }, family: { type: Type.STRING }, description: { type: Type.STRING }, uses: { type: Type.STRING }, stateAtSTP: { type: Type.STRING }, iupacNaming: { type: Type.STRING }, boilingPoint: { type: Type.STRING }, meltingPoint: { type: Type.STRING }, solubility: { type: Type.STRING }, density: { type: Type.STRING }, isomersCount: { type: Type.STRING }, toxicityDetails: { type: Type.STRING }, flammabilityRating: { type: Type.STRING } } },
+        biochemistry: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, formula: { type: Type.STRING }, type: { type: Type.STRING }, description: { type: Type.STRING }, biologicalFunction: { type: Type.STRING }, uses: { type: Type.STRING }, molecularWeight: { type: Type.STRING }, prevalenceInNature: { type: Type.STRING }, metabolicRole: { type: Type.STRING }, dietarySources: { type: Type.STRING }, clinicalImplications: { type: Type.STRING }, associatedDiseases: { type: Type.STRING } } },
+        electrochemistry: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, anode: { type: Type.OBJECT, properties: { metal: { type: Type.STRING }, halfReaction: { type: Type.STRING }, standardPotential: { type: Type.STRING } } }, cathode: { type: Type.OBJECT, properties: { metal: { type: Type.STRING }, halfReaction: { type: Type.STRING }, standardPotential: { type: Type.STRING } } }, overallReaction: { type: Type.STRING }, cellPotential: { type: Type.STRING }, cellNotation: { type: Type.STRING }, explanation: { type: Type.STRING }, applications: { type: Type.STRING }, gibbsEnergy: { type: Type.STRING }, theoreticalYieldInfo: { type: Type.STRING } } },
+        thermochemistry: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, equation: { type: Type.STRING }, enthalpyChange: { type: Type.STRING }, isExothermic: { type: Type.BOOLEAN }, explanation: { type: Type.STRING }, applications: { type: Type.STRING }, isSpontaneous: { type: Type.BOOLEAN }, entropyChange: { type: Type.STRING }, gibbsFreeEnergyChange: { type: Type.STRING }, keq: { type: Type.STRING }, activationEnergy: { type: Type.STRING }, speedFactors: { type: Type.ARRAY, items: { type: Type.STRING } }, heatCapacityInfo: { type: Type.STRING } } },
+        solution: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, soluteName: { type: Type.STRING }, soluteFormula: { type: Type.STRING }, solventName: { type: Type.STRING }, concentrationMolarity: { type: Type.STRING }, solutionDescription: { type: Type.STRING }, applications: { type: Type.STRING }, solutionType: { type: Type.STRING }, phLevel: { type: Type.STRING }, conductivity: { type: Type.STRING }, boilingPointElevation: { type: Type.STRING }, freezingPointDepression: { type: Type.STRING }, osmoticPressure: { type: Type.STRING } } },
+        batteries: q === 'comparison' 
+            ? { type: Type.OBJECT, properties: { comparisons: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, description: { type: Type.STRING } } } } } }
+            : singleBatterySchema,
+        history: { type: Type.OBJECT, properties: { topic: { type: Type.STRING }, summary: { type: Type.STRING }, events: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { year: { type: Type.STRING }, title: { type: Type.STRING }, description: { type: Type.STRING }, scientist: { type: Type.STRING } } } }, impactOnSociety: { type: Type.STRING }, nobelPrizes: { type: Type.STRING } } }
+    };
+
+    if (isComparisonMode && mode !== 'batteries') {
+        const finalPrompt = `قارن بشكل شامل ومتقابل بين شيئين بخصوص: ${q}. اذكر أوجه التشابه والاختلاف بدقة علمية مذهلة وتفاصيل دقيقة جداً لا يقل عدد الكلمات عن 300 كلمة.`;
+        const comparisonText = await callGeminiAI(finalPrompt, sys);
+        if (comparisonText && typeof comparisonText === 'string') {
+            const placeholder = { id: 'comparison', name: `مقارنة: ${q}`, formula: 'N/A', description: comparisonText, uses: comparisonText, stateAtSTP: 'N/A', iupacNaming: 'N/A', biologicalFunction: comparisonText };
+            if (mode === 'organic') setOrganicResult({ ...placeholder, family: 'مقارنة', lewisStructureImage: '' });
+            else if (mode === 'biochemistry') setBiomoleculeResult({ ...placeholder, type: 'مقارنة', structureImage: '' });
+            else setOrganicResult({ ...placeholder, family: 'مقارنة', lewisStructureImage: '' });
         }
-    } catch (e) {
-        setError("فشل إتمام التفاعل.");
+    } else {
+        try {
+            const prompt = mode === 'batteries' && q === 'comparison'
+                ? "قارن بالتفصيل الشامل بين بطارية ليثيوم أيون (Li-ion)، بطارية الرصاص الحمضية (Lead-Acid)، وبطارية فوسفات حديد الليثيوم (LiFePO4). يجب أن تكون هناك 3 أعمدة للمقارنة. ركز على الجهد، المقاومة الداخلية، كثافة الطاقة، دورة الحياة، والكيمياء الداخلية بالتفصيل لكل نوع." 
+                : `تحليل مفصل جداً لـ: ${q}`;
+                
+            const schema = schemas[mode];
+            const data = await callGeminiAI(prompt, sys, schema);
+            
+            if (data) {
+                if (mode === 'batteries') {
+                    setBatteryResult(data);
+                } else {
+                    const structureImg = await generateAIImage(q);
+                    if (mode === 'organic') setOrganicResult({ ...data, lewisStructureImage: structureImg || '' });
+                    if (mode === 'biochemistry') setBiomoleculeResult({ ...data, structureImage: structureImg || '' });
+                    if (mode === 'electrochemistry') setElectroResult({ ...data, diagramImage: structureImg || '' });
+                    if (mode === 'thermochemistry') setThermoResult({ ...data, energyProfileImage: structureImg || '' });
+                    if (mode === 'solution') setSolutionResult({ ...data });
+                    if (mode === 'history') setHistoryResult({ ...data, illustrationImage: structureImg || '' });
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            setError("فشل في جلب البيانات.");
+        }
     }
     setIsLoading(false);
   };
 
-  const handleOrganicSearch = async (q: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تحليل كيمياء عضوية شامل باللغة العربية.`;
-        const data = await callGeminiAI(q, sys);
-        if (data && data.name) {
-            data.lewisStructureImage = generateMockImage(data.formula);
-            isSecond ? setOrganicInfo2(data) : setOrganicInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
+  const handleAtomSelect = async (atom: Atom) => {
+    setFullAtomDetails(null);
+    setSelectedReaction(null);
+
+    setIsLoading(true);
+    setLoadingMessage(`جاري جلب بيانات عنصر ${atom.name}...`);
+    
+    const sys = `أنت موسوعة كيميائية. قدم بيانات مفصلة جداً لعنصر كيميائي واحد فقط، وعامله كأنه "مركب" من ذرة واحدة. املأ كل الحقول الممكنة في مخطط JSON. تجاهل الحقول غير ذات الصلة مثل معادلة التكوين.`;
+    const schema = { type: Type.OBJECT, properties: { reaction: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, name: { type: Type.STRING }, formula: { type: Type.STRING }, emoji: { type: Type.STRING }, bondType: { type: Type.STRING }, academicContext: { type: Type.STRING }, balancedFormationEquation: { type: Type.STRING }, formationBalancingSteps: { type: Type.STRING }, molarMass: { type: Type.STRING }, state: { type: Type.STRING }, density: { type: Type.STRING }, acidBase: { type: Type.STRING }, molecularGeometry: { type: Type.STRING }, reactionType: { type: Type.STRING }, hybridization: { type: Type.STRING }, polarity: { type: Type.STRING }, electronegativityDifference: { type: Type.STRING }, dipoleMoment: { type: Type.STRING }, vanDerWaalsRadius: { type: Type.STRING }, boilingPoint: { type: Type.STRING }, meltingPoint: { type: Type.STRING }, magneticDescription: { type: Type.STRING }, solubilityInWater: { type: Type.STRING }, solubilityInOrganicSolvents: { type: Type.STRING }, crystalDescription: { type: Type.STRING }, thermalStability: { type: Type.STRING }, bondEnthalpy: { type: Type.STRING }, discoveryStory: { type: Type.STRING }, discoverer: { type: Type.STRING }, discoveryYear: { type: Type.STRING }, electronConfiguration: { type: Type.STRING }, fullElectronConfiguration: { type: Type.STRING }, safety: { type: Type.OBJECT, properties: { warnings: { type: Type.ARRAY, items: { type: Type.STRING } }, ghsSymbols: { type: Type.ARRAY, items: { type: Type.STRING } } } } } } } };
+    const data = await callGeminiAI(`تحليل شامل لعنصر: ${atom.name} (${atom.symbol})`, sys, schema);
+
+    if (data?.reaction) {
+        const reactionData = data.reaction;
+        reactionData.lewisStructure = await generateAIImage(reactionData.formula || atom.symbol);
+        setFullAtomDetails(reactionData); 
+    }
+    setIsLoading(false);
   };
 
-  const handleBiomoleculeGenerate = async (name: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تحليل كيمياء حيوية شامل باللغة العربية.`;
-        const data = await callGeminiAI(name, sys);
-        if (data && data.name) {
-            data.structureImage = generateMockImage(data.name);
-            isSecond ? setBiomoleculeInfo2(data) : setBiomoleculeInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
-
-  const handleGalvanicSimulate = async (m1: string, m2: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `محاكاة كهروكيميائية شاملة باللغة العربية.`;
-        const data = await callGeminiAI(`${m1} and ${m2} cell`, sys);
-        if (data && data.anode) {
-            data.diagramImage = generateMockImage("galvanic");
-            isSecond ? setGalvanicInfo2(data) : setGalvanicInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
-
-  const handleThermoAnalyze = async (eq: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تحليل ثيرموديناميكي شامل باللغة العربية.`;
-        const data = await callGeminiAI(eq, sys);
-        if (data && data.equation) {
-            data.energyProfileImage = generateMockImage("thermo");
-            isSecond ? setThermoInfo2(data) : setThermoInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
-
-  const handleSolutionAnalyze = async (s: string, sv: string, c: number, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تحليل محاليل شامل باللغة العربية.`;
-        const data = await callGeminiAI(`${s} in ${sv}`, sys);
-        if (data && data.soluteName) {
-            data.solutionImage = generateMockImage("solution");
-            isSecond ? setSolutionInfo2(data) : setSolutionInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
-
-  const handleBatterySimulate = async (type: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تحليل تكنولوجيا بطاريات شامل باللغة العربية.`;
-        const data = await callGeminiAI(type, sys);
-        if (data && data.name) {
-            data.diagramImage = generateMockImage("battery");
-            isSecond ? setBatteryInfo2(data) : setBatteryInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
-
-  const handleHistoryExplore = async (topic: string, isSecond: boolean = false) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const sys = `تأريخ كيميائي شامل باللغة العربية.`;
-        const data = await callGeminiAI(topic, sys);
-        if (data && data.topic) {
-            data.illustrationImage = generateMockImage("history");
-            isSecond ? setHistoryInfo2(data) : setHistoryInfo(data);
-        }
-      } catch (e) { }
-      setIsLoading(false);
-  };
 
   const resetAll = () => {
-      setOrganicInfo(null); setOrganicInfo2(null);
-      setBiomoleculeInfo(null); setBiomoleculeInfo2(null);
-      setGalvanicInfo(null); setGalvanicInfo2(null);
-      setThermoInfo(null); setThermoInfo2(null);
-      setSolutionInfo(null); setSolutionInfo2(null);
-      setBatteryInfo(null); setBatteryInfo2(null);
-      setHistoryInfo(null); setHistoryInfo2(null);
+      setSelectedReaction(null);
       setCompoundReactionResult(null);
-      setFoundReactions(null); setSelectedReaction(null);
-      setError(null);
-  };
-
-  const renderComparisonLayout = (info1: any, info2: any, CardComponent: any, emptyProps: any) => {
-    if (!isComparisonMode) return info1 ? <CardComponent info={info1} onNew={() => resetAll()} /> : <EmptyState {...emptyProps} error={error} />;
-    return (
-        <div className="w-full h-full flex flex-col md:flex-row gap-6 p-4 overflow-y-auto scrollbar-hide animate-fade-in">
-            <div className="flex-1 min-w-[300px]">
-                <div className="text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-2 px-6">العنصر الأول</div>
-                {info1 ? <CardComponent info={info1} onNew={() => resetAll()} /> : <div className="h-64 bg-slate-100 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 rounded-[2.5rem] flex items-center justify-center text-slate-400 font-bold italic">في انتظار العنصر الأول...</div>}
-            </div>
-            <div className="w-px bg-slate-200 dark:bg-slate-700 hidden md:block my-20 opacity-30"></div>
-            <div className="flex-1 min-w-[300px]">
-                <div className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-2 px-6">العنصر الثاني</div>
-                {info2 ? <CardComponent info={info2} onNew={() => resetAll()} /> : <div className="h-64 bg-slate-100 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 rounded-[2.5rem] flex items-center justify-center text-slate-400 font-bold italic">في انتظار العنصر الثاني...</div>}
-            </div>
-        </div>
-    );
+      setFullAtomDetails(null);
+      setOrganicResult(null); setBiomoleculeResult(null);
+      setElectroResult(null); setThermoResult(null); setSolutionResult(null);
+      setBatteryResult(null); setHistoryResult(null); setError(null);
   };
 
   if (appState === 'welcome') return <WelcomeScreen onStart={() => setAppState('simulation')} />;
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden ${theme === 'dark' ? 'dark' : ''}`}>
+    <div className="flex flex-col h-screen overflow-hidden bg-[#0a1120] text-white selection:bg-cyan-500/30">
       <Header theme={theme} setTheme={setTheme} />
       <div className="flex flex-grow overflow-hidden relative">
         <Sidebar 
             atoms={ATOMS}
             onAtomClick={(id) => {
                 const atom = ATOMS.find(a => a.id === id);
-                if(atom && simulationMode === 'atoms') {
-                    setPlacedAtoms(prev => [...prev, {...atom, instanceId: ++atomIdCounter.current, x: Math.random()*200+100, y: Math.random()*200+100}]);
+                if(atom && (simulationMode === 'atoms' || simulationMode === 'compounds')) {
+                    atomIdCounter.current += 1;
+                    setPlacedAtoms(prev => [...prev, { ...atom, instanceId: atomIdCounter.current, x: Math.random() * 200 + 200, y: Math.random() * 200 + 200 }]);
                 }
             }}
-            onModeChange={(m) => { setSimulationMode(m); resetAll(); }}
+            onModeChange={(m) => { setSimulationMode(m); resetAll(); setIsComparisonMode(false); }}
             currentMode={simulationMode}
-            isComparisonMode={isComparisonMode}
-            setIsComparisonMode={setIsComparisonMode}
             reactant1={reactant1} setReactant1={setReactant1}
             reactant2={reactant2} setReactant2={setReactant2}
-            onCompoundReact={handleCompoundReaction}
-            onOrganicSearch={handleOrganicSearch}
-            onBiomoleculeGenerate={handleBiomoleculeGenerate}
-            onGalvanicCellSimulate={handleGalvanicSimulate}
-            onThermoAnalyze={handleThermoAnalyze}
-            onSolutionAnalyze={handleSolutionAnalyze}
-            onBatterySimulate={handleBatterySimulate}
-            onHistoryExplore={handleHistoryExplore}
-            isOrganicCompoundLoading={isLoading} isBiomoleculeLoading={isLoading} isGalvanicCellLoading={isLoading}
-            isThermoLoading={isLoading} isSolutionLoading={isLoading} isBatteryLoading={isLoading} isHistoryLoading={isLoading}
+            onCompoundReact={handleAnalyzeBonds}
+            onOrganicSearch={(q) => handleGlobalSearch('organic', q)}
+            onBiomoleculeGenerate={(q) => handleGlobalSearch('biochemistry', q)} 
+            onGalvanicCellSimulate={(m1, m2) => handleGlobalSearch('electrochemistry', `${m1} و ${m2}`)}
+            onThermoAnalyze={(q) => handleGlobalSearch('thermochemistry', q)}
+            onSolutionAnalyze={(s, sv, m) => handleGlobalSearch('solution', `محلول ${s} في ${sv} بتركيز ${m} مولار`)}
+            onBatterySimulate={(type) => handleGlobalSearch('batteries', type)}
+            onHistoryExplore={(q) => handleGlobalSearch('history', q)}
+            isComparisonMode={isComparisonMode}
+            setIsComparisonMode={setIsComparisonMode}
         />
-        <main className="flex-grow bg-white dark:bg-[#0f172a] relative overflow-hidden transition-colors duration-500">
-            {isLoading && <Loader modeName={MODE_NAMES[simulationMode]} />}
-            <div className="w-full h-full overflow-y-auto scrollbar-hide">
-                {simulationMode === 'ai-lab' && <div className="p-4"><LocalAILab /></div>}
+        <main className="flex-grow bg-[#0a1120] relative overflow-hidden flex flex-col">
+            {isLoading && (
+              <div className="absolute inset-0 bg-black/95 backdrop-blur-3xl z-[100] flex items-center justify-center animate-fade-in text-center">
+                <div className="space-y-8 max-w-lg px-6">
+                  <div className="text-8xl animate-bounce">⚗️</div>
+                  <h2 className="text-4xl font-black text-[#5ce1ff]">{loadingMessage}</h2>
+                  <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-cyan-500 h-full animate-progress-bar"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="flex-grow overflow-y-auto scrollbar-hide">
                 {simulationMode === 'atoms' && (
                     <div className="w-full h-full relative overflow-hidden flex flex-col">
-                        <ReactionCanvas atoms={placedAtoms} isPaused={isLoading} pauseText="⚛️" canvasRef={canvasRef} onDrop={()=>{}} onDragOver={(e)=>e.preventDefault()} />
-                        {error && (
-                            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 text-[10px] font-bold animate-slide-up">
-                                ⚠️ {error}
-                            </div>
-                        )}
-                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 z-10">
-                            <button onClick={() => setPlacedAtoms([])} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-white p-4 rounded-full shadow-xl">↺</button>
-                            <button onClick={handleAnalyzeBonds} className="bg-cyan-500 text-white px-10 py-4 rounded-full font-bold shadow-2xl transition-all hover:scale-105 active:scale-95">تحليل الروابط</button>
+                        <ReactionCanvas atoms={placedAtoms} isPaused={isLoading} pauseText={null} canvasRef={canvasRef} onDrop={()=>{}} onDragOver={(e)=>e.preventDefault()} onAtomSelect={handleAtomSelect} />
+                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-6 z-10">
+                            <button onClick={() => setPlacedAtoms([])} className="bg-white/5 backdrop-blur-xl p-5 rounded-full shadow-2xl hover:bg-white/10 transition-all font-black border border-white/10">↺</button>
+                            <button onClick={handleAnalyzeBonds} className="bg-[#00bcd4] hover:bg-[#00acc1] text-white px-16 py-4 rounded-full font-black shadow-lg transition-all hover:scale-105 text-lg">تحليل الذرات</button>
                         </div>
-                        {foundReactions && (
-                            <ReactionSelection 
-                                reactions={foundReactions} 
-                                onSelect={(reaction) => {
-                                    setSelectedReaction({...reaction, lewisStructure: generateMockImage(reaction.formula || "molecule")});
-                                    setFoundReactions(null);
-                                }} 
-                                onCancel={() => setFoundReactions(null)} 
-                            />
-                        )}
-                        {selectedReaction && <MoleculeInfoCard reaction={selectedReaction} onNewReaction={() => setSelectedReaction(null)} />}
+                        {(selectedReaction || fullAtomDetails) && <MoleculeInfoCard reaction={selectedReaction || fullAtomDetails!} onNewReaction={resetAll} />}
                     </div>
                 )}
-                {simulationMode === 'organic' && renderComparisonLayout(organicInfo, organicInfo2, OrganicCompoundInfoCard, { icon: "🌿", title: "الكيمياء العضوية", desc: "استكشف المركبات العضوية وبنيتها عبر الذكاء الاصطناعي." })}
-                {simulationMode === 'biochemistry' && renderComparisonLayout(biomoleculeInfo, biomoleculeInfo2, BiomoleculeInfoCard, { icon: "🧬", title: "الكيمياء الحيوية", desc: "تحليل الجزيئات الحيوية المعقدة." })}
-                {simulationMode === 'electrochemistry' && renderComparisonLayout(galvanicInfo, galvanicInfo2, GalvanicCellCard, { icon: "⚡️", title: "الكيمياء الكهربائية", desc: "محاكاة الخلايا الجلفانية والجهد." })}
-                {simulationMode === 'thermochemistry' && renderComparisonLayout(thermoInfo, thermoInfo2, ThermoChemistryCard, { icon: "🔥", title: "الكيمياء الحرارية", desc: "دراسة تغيرات الإنثالبي والطاقة." })}
-                {simulationMode === 'solution' && renderComparisonLayout(solutionInfo, solutionInfo2, SolutionChemistryCard, { icon: "💧", title: "كيمياء المحاليل", desc: "تحليل التركيزات والخواص الجامعة." })}
-                {simulationMode === 'batteries' && renderComparisonLayout(batteryInfo, batteryInfo2, BatteryInfoCard, { icon: "🔋", title: "تكنولوجيا البطاريات", desc: "استكشاف ميكانيكا تخزين الطاقة." })}
-                {simulationMode === 'history' && renderComparisonLayout(historyInfo, historyInfo2, HistoryTimelineCard, { icon: "📜", title: "تاريخ الكيمياء", desc: "رحلة عبر الزمن في عالم العلم." })}
-                {simulationMode === 'compounds' && (
-                    compoundReactionResult 
-                    ? <div className="p-4"><CompoundReactionResult reaction={compoundReactionResult} onNewReaction={() => setCompoundReactionResult(null)} /></div>
-                    : <CompoundSelector reactant1={reactant1} reactant2={reactant2} setReactant1={setReactant1} setReactant2={setReactant2} isLoading={isLoading} error={error} onStartReaction={handleCompoundReaction} />
-                )}
+                {simulationMode === 'compounds' && (compoundReactionResult ? (
+                     <div className="w-full h-full relative overflow-y-auto scrollbar-hide flex justify-center">
+                        <CompoundReactionResult reaction={compoundReactionResult} onNewReaction={resetAll} />
+                     </div>
+                ) : <CompoundSelector reactant1={reactant1} reactant2={reactant2} setReactant1={setReactant1} setReactant2={setReactant2} isLoading={isLoading} error={error} onStartReaction={handleAnalyzeBonds} />)}
+                
+                {simulationMode === 'organic' && organicResult && <OrganicCompoundInfoCard info={organicResult} onNew={resetAll} />}
+                {simulationMode === 'biochemistry' && biomoleculeResult && <BiomoleculeInfoCard info={biomoleculeResult} onNew={resetAll} />}
+                {simulationMode === 'electrochemistry' && electroResult && <GalvanicCellCard info={electroResult} onNew={resetAll} />}
+                {simulationMode === 'thermochemistry' && thermoResult && <ThermoChemistryCard info={thermoResult} onNew={resetAll} />}
+                {simulationMode === 'solution' && solutionResult && <SolutionChemistryCard info={solutionResult} onNew={resetAll} />}
+                {simulationMode === 'batteries' && batteryResult && <BatteryInfoCard info={batteryResult} onNew={resetAll} />}
+                {simulationMode === 'history' && historyResult && <HistoryTimelineCard info={historyResult} onNew={resetAll} />}
+                {simulationMode === 'ai-lab' && <LocalAILab />}
             </div>
         </main>
       </div>
     </div>
   );
 };
-
-const Loader = ({ modeName }: { modeName: string }) => (
-    <div className="absolute inset-0 bg-white/60 dark:bg-black/80 backdrop-blur-md z-50 flex items-center justify-center animate-fade-in">
-        <div className="text-center p-10 bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 max-w-sm w-full">
-            <div className="text-7xl mb-6 animate-bounce">🧪</div>
-            <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">جاري تحليل البيانات...</h2>
-            <div className="flex items-center justify-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full animate-pulse bg-cyan-500"></span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">ElementX Intelligence Engine</span>
-            </div>
-            <div className="bg-slate-100 dark:bg-slate-800/50 py-3 px-6 rounded-2xl mb-6 border border-slate-200/50 dark:border-slate-700/50 text-sm font-black text-cyan-600 dark:text-cyan-400">
-                {modeName}
-            </div>
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div className="h-full bg-cyan-500 animate-[loading_1.5s_infinite]"></div>
-            </div>
-        </div>
-    </div>
-);
-
-const EmptyState = ({ icon, title, desc, error }: { icon: string, title: string, desc: string, error?: string | null }) => (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in space-y-6">
-        <span className="text-6xl mb-2 grayscale opacity-40">{icon}</span>
-        <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200">{title}</h2>
-        <p className="text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed text-sm">{desc}</p>
-        {error && <div className="bg-red-500/10 text-red-500 p-4 rounded-2xl text-[10px] font-bold border border-red-500/20 max-w-xs">⚠️ {error}</div>}
-    </div>
-);
 
 export default App;

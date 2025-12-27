@@ -6,14 +6,18 @@ interface KnowledgeModuleProps {
     icon: string;
     title: string;
     description: string;
+    onClick?: () => void;
 }
 
-const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({ icon, title, description }) => (
-    <div className="bg-white/40 dark:bg-slate-800/40 p-5 rounded-[2rem] border border-white/50 dark:border-slate-700/50 shadow-sm transition-all hover:scale-105 hover:bg-white/60 dark:hover:bg-slate-800/60">
+const KnowledgeModule: React.FC<KnowledgeModuleProps> = ({ icon, title, description, onClick }) => (
+    <button 
+        onClick={onClick}
+        className="bg-white/40 dark:bg-slate-800/40 p-5 rounded-[2rem] border border-white/50 dark:border-slate-700/50 shadow-sm transition-all hover:scale-105 hover:bg-white/60 dark:hover:bg-slate-800/60 text-right"
+    >
         <div className="text-3xl mb-3">{icon}</div>
         <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 mb-1">{title}</h3>
         <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-bold">{description}</p>
-    </div>
+    </button>
 );
 
 export const LocalAILab: React.FC = () => {
@@ -28,11 +32,11 @@ export const LocalAILab: React.FC = () => {
         }
     }, [messages]);
 
-    const handleSend = async () => {
-        if (!question.trim() || isLoading) return;
+    const handleSend = async (forcedQuestion?: string) => {
+        const q = forcedQuestion || question;
+        if (!q.trim() || isLoading) return;
 
-        const userMsg = question;
-        setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+        setMessages(prev => [...prev, { role: 'user', text: q }]);
         setQuestion('');
         setIsLoading(true);
 
@@ -40,7 +44,7 @@ export const LocalAILab: React.FC = () => {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const response = await ai.models.generateContent({
                 model: 'gemini-3-flash-preview',
-                contents: userMsg,
+                contents: q,
                 config: {
                     systemInstruction: `أنت "خبير الحوسبة الكيميائية في ElementX".
                     - قدم إجابات علمية رصينة ودقيقة جداً.
@@ -102,21 +106,25 @@ export const LocalAILab: React.FC = () => {
                                 icon="⚗️" 
                                 title="تفسير الميكانيكية" 
                                 description="شرح كيفية كسر وتكوين الروابط في التفاعلات المعقدة."
+                                onClick={() => handleSend("اشرح لي ميكانيكية تفاعل الاستبدال النوكليوفيلي SN2")}
                             />
                             <KnowledgeModule 
                                 icon="⚖️" 
                                 title="حل المعادلات" 
                                 description="مساعدتك في وزن المعادلات الكيميائية وتوقع النواتج."
+                                onClick={() => handleSend("كيف يمكنني وزن معادلة تفاعل برمنجنات البوتاسيوم في وسط حمضي؟")}
                             />
                             <KnowledgeModule 
                                 icon="🧬" 
                                 title="البنية الجزيئية" 
                                 description="تحليل الأشكال الفراغية، التهجين، والروابط بين الذرات."
+                                onClick={() => handleSend("ما هو نوع التهجين في جزيء SF6 وشكله الهندسي؟")}
                             />
                             <KnowledgeModule 
                                 icon="🛡️" 
                                 title="بروتوكول السلامة" 
                                 description="إرشادات التعامل الآمن مع المواد الكيميائية الخطرة."
+                                onClick={() => handleSend("ما هي مخاطر التعامل مع حمض الهيدروفلوريك HF؟")}
                             />
                         </div>
                     </div>
@@ -164,7 +172,7 @@ export const LocalAILab: React.FC = () => {
                             className="flex-1 bg-transparent border-none py-3.5 text-slate-800 dark:text-white outline-none resize-none h-14 text-[14px] font-bold"
                         />
                         <button 
-                            onClick={handleSend}
+                            onClick={() => handleSend()}
                             disabled={isLoading || !question.trim()}
                             className="h-12 w-12 flex items-center justify-center rounded-full font-black transition-all hover:scale-110 active:scale-95 disabled:opacity-30 bg-cyan-500 text-white shadow-lg shadow-cyan-500/40"
                         >

@@ -11,6 +11,16 @@ export interface Atom {
   instanceId?: number;
   x?: number;
   y?: number;
+  electronConfiguration?: string; // التوزيع المختصر
+  fullElectronConfiguration?: string; // التوزيع المداري المفصل
+  magneticDescription?: string; // الوصف المغناطيسي (بارا/دايا)
+}
+
+export interface AtomBreakdown {
+  atomName: string;
+  atomSymbol: string;
+  config: string;
+  description: string;
 }
 
 export interface Reaction {
@@ -24,9 +34,11 @@ export interface Reaction {
   balancedFormationEquation?: string; 
   formationBalancingSteps?: string;
   academicContext?: string;
+  atomBreakdown?: AtomBreakdown[];
   
   // الخصائص الفيزيائية
-  molecularDensity?: string;
+  // FIX: Renamed molecularDensity to density and added missing physical properties to match schema.
+  density?: string;
   acidBase?: string;
   applications?: string;
   commonality?: string; 
@@ -35,19 +47,24 @@ export interface Reaction {
   molecularGeometry?: string;
   reactionType?: string; 
   lewisStructure?: string;
+  boilingPoint?: string;
+  meltingPoint?: string;
   
-  // الخصائص المتقدمة (تمت الإضافة للدقة)
+  // الخصائص المتقدمة
   hybridization?: string;
   polarity?: string;
-  electronegativityDifference?: string; // جديد: فرق السالبية الكهربائية
-  dipoleMoment?: string; // جديد: عزم الثنائي قطب
-  vanDerWaalsRadius?: string; // جديد: نصف قطر فان دير فالس للمنتج
+  electronegativityDifference?: string;
+  dipoleMoment?: string;
+  vanDerWaalsRadius?: string;
   magneticDescription?: string;
   solubilityInWater?: string;
   solubilityInOrganicSolvents?: string;
   crystalDescription?: string;
   thermalStability?: string;
   bondEnthalpy?: string;
+  // FIX: Added missing electron configuration properties to match schema.
+  electronConfiguration?: string;
+  fullElectronConfiguration?: string;
   
   // التاريخ والاكتشاف
   discoverer?: string;
@@ -180,22 +197,30 @@ export interface SolutionChemistryInfo {
 export interface BatteryInfo {
     id: string;
     name: string;
-    type?: string;
+    type: string;
     nominalVoltage: string;
     applications: string;
-    diagramImage: string;
-    energyDensity?: string;
-    cycleLife?: string;
+    energyDensity: string;
+    cycleLife: string;
     internalResistance?: string;
-    anodeMaterial?: string;
-    cathodeMaterial?: string;
-    electrolyte?: string;
+    anodeMaterial: string;
+    cathodeMaterial: string;
+    electrolyte: string;
     chargingCharacteristics?: string;
     selfDischargeRate?: string;
-    anodeReaction?: string;
-    cathodeReaction?: string;
+    anodeReaction: string;
+    cathodeReaction: string;
     safetyRisks?: string;
     environmentalRecycling?: string;
+    diagramImage?: string;
+}
+
+export interface BatteryComparisonPoint {
+    title: string;
+    description: string;
+}
+export interface BatteryComparisonInfo {
+    comparisons: BatteryComparisonPoint[];
 }
 
 export interface HistoryInfo {

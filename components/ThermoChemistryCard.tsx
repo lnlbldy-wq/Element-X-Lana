@@ -5,7 +5,7 @@ import type { ThermoChemistryInfo } from '../types';
 const MetricBox: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
     <div className="bg-slate-900/50 p-6 rounded-[2rem] border border-slate-700 text-center shadow-md">
         <span className="text-[9px] text-slate-400 block mb-1 font-black uppercase tracking-widest">{label}</span>
-        <span dir="ltr" className={`text-xl font-mono font-black ${color}`}>{value || '---'}</span>
+        <span dir="ltr" className={`text-2xl font-mono font-black ${color}`}>{value || '---'}</span>
     </div>
 );
 
