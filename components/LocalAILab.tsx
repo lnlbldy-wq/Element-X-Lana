@@ -39,6 +39,15 @@ export const LocalAILab: React.FC = () => {
         setMessages(prev => [...prev, { role: 'user', text: q }]);
         setQuestion('');
         setIsLoading(true);
+        
+        if (!process.env.API_KEY) {
+            setMessages(prev => [...prev, {
+                role: 'ai',
+                text: '❌ مفتاح API_KEY غير موجود. يرجى إضافته كمتغير بيئة في إعدادات النشر.'
+            }]);
+            setIsLoading(false);
+            return;
+        }
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -59,7 +68,7 @@ export const LocalAILab: React.FC = () => {
         } catch (err) {
             setMessages(prev => [...prev, { 
                 role: 'ai', 
-                text: '❌ تعذر الوصول إلى السحابة الذكية. يرجى التحقق من اتصالك.' 
+                text: '❌ تعذر الوصول إلى السحابة الذكية. يرجى التحقق من اتصالك ومفتاح API.' 
             }]);
         } finally {
             setIsLoading(false);

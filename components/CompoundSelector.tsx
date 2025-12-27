@@ -35,6 +35,7 @@ const isSafetyError = (error: any): boolean => {
 };
 
 const fetchCompoundImage = async (name: string, formula: string): Promise<string | 'safety_block' | null> => {
+    if (!process.env.API_KEY) return null;
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const imagePrompt = `Scientific 3D ball-and-stick molecule model of ${name} (${formula}). Clear white background. Minimalist aesthetic. Vibrant colors.`;
     
