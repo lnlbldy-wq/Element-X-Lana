@@ -55,9 +55,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
+    if (!process.env.API_KEY) {
+      setError("مفتاح API غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
+    }
   }, []);
 
   const generateAIImage = async (query: string): Promise<string | null> => {
+    if (!process.env.API_KEY) return null;
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
       const prompt = `Pure white background, high-quality 2D scientific Lewis dot diagram of ${query}. Black lines, high contrast. Professional textbook illustration style. Clear labels.`;
@@ -71,6 +75,10 @@ const App: React.FC = () => {
   };
 
   const callGeminiAI = async (prompt: string, systemInstruction: string, schema?: any) => {
+      if (!process.env.API_KEY) {
+        setError("مفتاح API غير موجود. يرجى إضافته كمتغير بيئة (Environment Variable) في إعدادات منصة النشر (مثل Vercel) لإتمام الاتصال.");
+        return null;
+      }
       try {
           const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
           const response = await ai.models.generateContent({
@@ -225,7 +233,11 @@ const App: React.FC = () => {
       setFullAtomDetails(null);
       setOrganicResult(null); setBiomoleculeResult(null);
       setElectroResult(null); setThermoResult(null); setSolutionResult(null);
-      setBatteryResult(null); setHistoryResult(null); setError(null);
+      setBatteryResult(null); setHistoryResult(null); 
+      // Do not reset the API key error so the user can see it
+      if (error && !error.includes("API")) {
+        setError(null);
+      }
   };
 
   if (appState === 'welcome') return <WelcomeScreen onStart={() => setAppState('simulation')} />;
